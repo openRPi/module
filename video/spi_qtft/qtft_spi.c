@@ -40,7 +40,7 @@ static struct spi_board_info qtft_spi_dev_board_info[] = {
 		.bus_num     = SPI_BUS_NUM,
 		.chip_select = 0,
 		.mode        = SPI_MODE_0,
-		.max_speed_hz = 10e6,
+		.max_speed_hz = 100e6,
 	}
 };
 
