@@ -23,9 +23,19 @@ enum flag_t {
  */
 // void delay_ms(int ms)
 // {
-// 	;
+// 	bcm2835_delay(ms);
 // }
 #define delay_ms(ms) msleep(ms)
+
+/**
+ * RESET 管脚控制，可重写
+ * @param x 0或1
+ */
+// void iface_set_reset(int x)
+// {
+// 	bcm2835_gpio_write(TFT_RST,x);
+// }
+#define iface_set_reset(x) qtft_gpio_set_reset(x)
 
 /**
  * 底层接口初始化
@@ -91,7 +101,6 @@ int iface_write_then_read(const void *tbuf, int tn, void *rbuf, int rn, enum fla
 
 	if(tn)
 	{
-		// bcm2835_spi_writenb((char *)tbuf,tn);
 		err = qtft_spi_write(tbuf,tn);
 		if(err)
 			goto out;
@@ -99,7 +108,6 @@ int iface_write_then_read(const void *tbuf, int tn, void *rbuf, int rn, enum fla
 
 	if(rn)
 	{
-		// bcm2835_spi_transfern((char *)rbuf,rn);
 		err = qtft_spi_read(rbuf,tn);
 		if(err)
 			goto out;
@@ -192,12 +200,6 @@ int lcd_display_on(void)
 	return w8(0x29, flag_cmd);
 }
 
-int lcd_memory_area_write(int x1, int y1, int x2, int y2, const unsigned char *buf, int size)
-{
-	lcd_address_set(x1, y1, x2, y2);
-	return wc8_then_wdbuf(0x2c, buf, size);
-}
-
 int lcd_column_address_set(int x1, int x2)
 {
 	unsigned char tbuf[4];
@@ -218,15 +220,37 @@ int lcd_page_address_set(int y1, int y2)
 	return wc8_then_wdbuf(0x2b, tbuf, 4);
 }
 
-int lcd_memory_area_read(int x1, int y1, int x2, int y2, unsigned char *buf, int size)
+int lcd_cursor_reset(void)
 {
-	int err=0;
-	int area_size=(x2-x1+1)*(y2-y1+1);
-	int min = size<area_size ? size : area_size;
+	return w8(0x2c,flag_cmd);
+}
 
-	lcd_address_set(x1,y1,x2,y2);
-	err = wc8_then_rdbuf(0x2e, buf, min);
-	return err? err : min;
+int lcd_memory_area_write(const unsigned char *buf, int size, int _continue)
+{
+	if(_continue)
+		return wc8_then_wdbuf(0x3c, buf, size);
+	else
+		return wc8_then_wdbuf(0x2c, buf, size);
+}
+
+int lcd_memory_write(const unsigned char *buf, int size, int _continue)
+{
+	lcd_address_set(0,0,320,240);
+	return lcd_memory_area_write(buf, size, _continue);
+}
+
+int lcd_memory_area_read(unsigned char *buf, int size, int _continue)
+{
+	if(_continue)
+		return wc8_then_wdbuf(0x2e, buf,size);
+	else
+		return wc8_then_wdbuf(0x3e, buf,size);
+}
+
+int lcd_memory_read(unsigned char *buf, int size, int _continue)
+{
+	lcd_address_set(0,0,320,240);
+	return lcd_memory_area_read(buf, size, _continue);
 }
 
 int lcd_power_contral_a(int reg_vd, int vbc)
@@ -250,22 +274,26 @@ int lcd_soft_reset(void)
 	return w8(0x01, flag_cmd);
 }
 
-int lcd_init(void)
+int lcd_hard_reset(void)
 {
-	int err=0;
-
-	err = iface_init();
-	if(err)
-		return err;
-
+	iface_set_reset(1);
+	delay_ms(5);
+	iface_set_reset(0);
+	delay_ms(20);
+	iface_set_reset(1);
+	delay_ms(120);
 	return 0;
 }
 
-int lcd_init_normal(void)
+int lcd_init(void)
+{
+	return iface_init();
+}
+
+int lcd_normal_config(void)
 {
 	#define return_err(func) do{int err=func; if(err){return err;}}while(0)
 
-	return_err( lcd_init() );
 	return_err( lcd_memory_access_control(MEMORY_ACCESS_NORMAL) );
 	return_err( lcd_pixel_format_set(PIXEL_FORMAT_16) );
 	return_err( lcd_power_contral_a(0,0) );

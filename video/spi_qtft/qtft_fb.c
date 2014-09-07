@@ -122,9 +122,19 @@ static int qtft_fb_probe(struct platform_device * dev)
 		goto err2;
 
 	// 初始化 LCD 模块
-	retval = lcd_init_normal();
+	retval = lcd_init();
 	if (retval < 0)
 		goto err3;
+
+	retval = lcd_hard_reset();
+	if (retval < 0)
+		goto err3;
+
+	retval = lcd_normal_config();
+	if (retval < 0)
+		goto err3;
+
+	lcd_address_set(0,0,(info->var).xres,(info->var).yres);
 	
 	// 将 info 指针存入平台设备私有数据
 	platform_set_drvdata(dev, info);
