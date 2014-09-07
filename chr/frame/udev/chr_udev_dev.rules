@@ -1,0 +1,1 @@
+ACTION=="add", KERNEL=="chr_udev_dev", 
