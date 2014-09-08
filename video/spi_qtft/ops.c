@@ -142,23 +142,17 @@ out:
 
 int ops_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
 {
-	func_in();
 	*var = qtft_fb_var_default;
-	func_out();
 	return 0;
 }
 
 int ops_set_par(struct fb_info *info)
 {
-	func_in();
-	func_out();
 	return 0;
 }
 
 int ops_blank(int blank, struct fb_info *info)
 {
-	func_in();
-	func_out();
 	return 0;
 }
 
@@ -166,7 +160,6 @@ int ops_setcolreg(unsigned regno, unsigned red, unsigned green, unsigned blue, u
 {
 	int err=0;
 	u32 v;
-	func_in();
 
 	if (regno >= 16)
 	{
@@ -184,18 +177,7 @@ int ops_setcolreg(unsigned regno, unsigned red, unsigned green, unsigned blue, u
 	goto out;
 
 out:
-	func_out();
 	return err;
-}
-
-/**
- * 等待位块传送
- */
-int ops_sync(struct fb_info *info)
-{
-	func_in();
-	func_out();
-	return 0;
 }
 
 struct fb_ops qtft_fb_ops = 
@@ -207,7 +189,7 @@ struct fb_ops qtft_fb_ops =
 
 	/* checks var and eventually tweaks it to something supported,
      * DO NOT MODIFY PAR */
-	// .fb_check_var = ops_check_var,
+	.fb_check_var = ops_check_var,
 
 	/* set the video mode according to info->var */
 	// .fb_set_par   = ops_set_par,
@@ -215,5 +197,4 @@ struct fb_ops qtft_fb_ops =
 	/* set color register */
 	.fb_setcolreg = ops_setcolreg,
 	// .fb_blank     = ops_blank,
-	// .fb_sync      = ops_sync,
 };
