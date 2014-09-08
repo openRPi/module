@@ -239,6 +239,14 @@ int lcd_memory_write(const unsigned char *buf, int size, int _continue)
 	return lcd_memory_area_write(buf, size, _continue);
 }
 
+int lcd_memory_write_from(int x, int y, const unsigned char *buf, int size)
+{
+	lcd_address_set(x,y,x,y);
+	lcd_cursor_reset();
+	lcd_address_set(0,0,320,240);
+	return lcd_memory_area_write(buf, size, 1);
+}
+
 int lcd_memory_area_read(unsigned char *buf, int size, int _continue)
 {
 	if(_continue)

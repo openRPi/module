@@ -68,6 +68,7 @@ extern int lcd_memory_area_write(const unsigned char *buf, int size, int _contin
  * 默认 area 0,0,320,240
  */
 extern int lcd_memory_write(const unsigned char *buf, int size, int _continue);
+extern int lcd_memory_write_from(int x, int y, const unsigned char *buf, int size);
 
 /**
  * 先调用 lcd_address_set() 明确 area，否则结果未知。
