@@ -36,5 +36,6 @@ struct fb_fix_screeninfo qtft_fb_fix_default = {
 	.xpanstep  = 1,
 	.ypanstep  = 1,
 	.ywrapstep = 1,
+	.line_length = 320*2,
 	.accel     = FB_ACCEL_NONE,
 };
